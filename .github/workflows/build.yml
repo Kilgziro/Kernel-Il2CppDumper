@@ -6,21 +6,22 @@ on:
         description: "Package name of the game:"
         required: true
 
+# Глобальный флаг для железобетонного перевода всей среды на Node 24
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
+
 jobs:
   build:
     runs-on: ubuntu-latest
-    # Включаем Node 24 на уровне всего джоба, как требует документация
-    env:
-      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
-      
     steps:
-    # Используем версии экшенов, готовые к переходу на Node 24
-    - uses: actions/checkout@v4
+    # 1. Последняя версия Checkout (v6) — полностью нативная Node 24
+    - uses: actions/checkout@v6
     
-    - uses: actions/setup-java@v4
+    # 2. Последняя версия Setup-Java (v5) — ядро полностью переписано под Node 24
+    - uses: actions/setup-java@v5
       with:
         distribution: temurin
-        java-version: 17
+        java-version: 17 # Java 17 необходима для стабильной сборки Gradle-модулей в 2026 году
         
     - run: |
         chmod +x ./gradlew
@@ -28,7 +29,8 @@ jobs:
         sed -i "s/com.game.packagename/${{ github.event.inputs.package_name }}/g" module/src/main/cpp/game.h
         ./gradlew :module:assembleRelease
         
-    - uses: actions/upload-artifact@v4
+    # 3. Последняя версия Upload-Artifact (v7) — современный загрузчик без старых зависимостей
+    - uses: actions/upload-artifact@v7
       with:
         name: zygisk-il2cppdumper
         path: out/magisk_module_release/
