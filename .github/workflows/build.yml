@@ -6,18 +6,17 @@ on:
         description: "Package name of the game:"
         required: true
 
-# Принудительно заставляем среду использовать новый Node 24 
-env:
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
-
 jobs:
   build:
     runs-on: ubuntu-latest
+    # Включаем Node 24 на уровне всего джоба, как требует документация
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+      
     steps:
-    # 1. Обновлено до v6 — нативная поддержка Node 24
-    - uses: actions/checkout@v6 
+    # Используем версии экшенов, готовые к переходу на Node 24
+    - uses: actions/checkout@v4
     
-    # 2. Обновлено до v4 (поддерживает Node 24) и Java 17 для стабильной сборки Gradle
     - uses: actions/setup-java@v4
       with:
         distribution: temurin
