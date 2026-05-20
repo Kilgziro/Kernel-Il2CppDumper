@@ -6,7 +6,7 @@ on:
         description: "Package name of the game:"
         required: true
 
-# Глобальный флаг для железобетонного перевода всей среды на Node 24
+# Жестко включаем Node 24 для всего окружения
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
 
@@ -14,22 +14,23 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-    # 1. Последняя версия Checkout (v6) — полностью нативная Node 24
-    - uses: actions/checkout@v6
+    # 1. Скачиваем код последней версией экшена
+    - uses: actions/checkout@v4
     
-    # 2. Последняя версия Setup-Java (v5) — ядро полностью переписано под Node 24
+    # 2. Настраиваем Java 17 и автоматически выдаем права на выполнение gradlew
     - uses: actions/setup-java@v5
       with:
         distribution: temurin
-        java-version: 17 # Java 17 необходима для стабильной сборки Gradle-модулей в 2026 году
+        java-version: 17
+        cache: 'gradle' # Этот параметр автоматически делает chmod +x ./gradlew в тихом режиме
         
+    # 4. Модифицируем исходники под твою игру Habby и собираем модуль
     - run: |
-        chmod +x ./gradlew
         sed -i 's/moduleDescription = "/moduleDescription = "(${{ github.event.inputs.package_name }}) /g' module.gradle
         sed -i "s/com.game.packagename/${{ github.event.inputs.package_name }}/g" module/src/main/cpp/game.h
         ./gradlew :module:assembleRelease
         
-    # 3. Последняя версия Upload-Artifact (v7) — современный загрузчик без старых зависимостей
+    # 5. Загружаем готовый Magisk-модуль в артефакты
     - uses: actions/upload-artifact@v7
       with:
         name: zygisk-il2cppdumper
