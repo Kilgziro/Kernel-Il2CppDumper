@@ -22,7 +22,6 @@ jobs:
         sudo apt-get update && sudo apt-get install -y dos2unix
         dos2unix gradlew
         chmod +x gradlew
-        ls -la gradlew
 
     - uses: actions/setup-java@v5
       with:
@@ -30,20 +29,18 @@ jobs:
         java-version: 11
         cache: gradle
 
-    # Добавляем NDK (обязательно для CMake)
-    - name: Setup Android NDK
+    - name: Setup NDK + CMake
       uses: nttld/setup-ndk@v1
       with:
         ndk-version: r25b
+        add-to-path: false
 
     - name: Build module
       run: |
+        echo "=== NDK Path ==="
+        echo $ANDROID_NDK_ROOT
+        
         sed -i 's/moduleDescription = "/moduleDescription = "(${{ github.event.inputs.package_name }}) /g' module.gradle
         sed -i "s/com.game.packagename/${{ github.event.inputs.package_name }}/g" module/src/main/cpp/game.h
         
-        ./gradlew :module:assembleRelease --stacktrace --info
-
-    - uses: actions/upload-artifact@v7
-      with:
-        name: zygisk-il2cppdumper
-        path: out/magisk_module_release/
+        ./gradlew :module:assembleRelease --stacktrace
