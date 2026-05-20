@@ -15,30 +15,27 @@ jobs:
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
 
-    - name: Fix gradlew (права + line endings)
+    - name: Fix gradlew (права + CRLF)
       run: |
-        # Устанавливаем dos2unix
         sudo apt-get update && sudo apt-get install -y dos2unix
-        
-        # Фиксим line endings (CRLF → LF) и права
         dos2unix gradlew
         chmod +x gradlew
         ls -la gradlew
 
-    - uses: actions/setup-java@v4
+    - uses: actions/setup-java@v5
       with:
         distribution: temurin
         java-version: 11
 
-    - name: Build Magisk module
+    - name: Build module
       run: |
         sed -i 's/moduleDescription = "/moduleDescription = "(${{ github.event.inputs.package_name }}) /g' module.gradle
         sed -i "s/com.game.packagename/${{ github.event.inputs.package_name }}/g" module/src/main/cpp/game.h
         ./gradlew :module:assembleRelease --stacktrace
 
-    - uses: actions/upload-artifact@v4
+    - uses: actions/upload-artifact@v7
       with:
         name: zygisk-il2cppdumper
         path: out/magisk_module_release/
