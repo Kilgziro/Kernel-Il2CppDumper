@@ -27,8 +27,14 @@ jobs:
     - uses: actions/setup-java@v5
       with:
         distribution: temurin
-        java-version: 11        # ← оставляем 11
+        java-version: 11
         cache: gradle
+
+    # Добавляем NDK (обязательно для CMake)
+    - name: Setup Android NDK
+      uses: nttld/setup-ndk@v1
+      with:
+        ndk-version: r25b
 
     - name: Build module
       run: |
