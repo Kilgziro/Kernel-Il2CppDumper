@@ -9,7 +9,7 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     
     env:
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
@@ -17,7 +17,7 @@ jobs:
     steps:
     - uses: actions/checkout@v6
 
-    - name: Fix gradlew (права + CRLF)
+    - name: Fix gradlew
       run: |
         sudo apt-get update && sudo apt-get install -y dos2unix
         dos2unix gradlew
@@ -27,13 +27,15 @@ jobs:
     - uses: actions/setup-java@v5
       with:
         distribution: temurin
-        java-version: 11
+        java-version: 11        # ← оставляем 11
+        cache: gradle
 
     - name: Build module
       run: |
         sed -i 's/moduleDescription = "/moduleDescription = "(${{ github.event.inputs.package_name }}) /g' module.gradle
         sed -i "s/com.game.packagename/${{ github.event.inputs.package_name }}/g" module/src/main/cpp/game.h
-        ./gradlew :module:assembleRelease --stacktrace
+        
+        ./gradlew :module:assembleRelease --stacktrace --info
 
     - uses: actions/upload-artifact@v7
       with:
