@@ -6,7 +6,6 @@ on:
         description: "Package name of the game:"
         required: true
 
-# Жестко включаем Node 24 для всего окружения
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
 
@@ -14,23 +13,20 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-    # 1. Скачиваем код последней версией экшена
     - uses: actions/checkout@v4
     
-    # 2. Настраиваем Java 17 и автоматически выдаем права на выполнение gradlew
     - uses: actions/setup-java@v5
       with:
         distribution: temurin
         java-version: 17
-        cache: 'gradle' # Этот параметр автоматически делает chmod +x ./gradlew в тихом режиме
+        cache: 'gradle'
         
-    # 4. Модифицируем исходники под твою игру Habby и собираем модуль
+    # Выполнение команд sed для подстановки имени пакета и запуск сборки
     - run: |
         sed -i 's/moduleDescription = "/moduleDescription = "(${{ github.event.inputs.package_name }}) /g' module.gradle
         sed -i "s/com.game.packagename/${{ github.event.inputs.package_name }}/g" module/src/main/cpp/game.h
         ./gradlew :module:assembleRelease
         
-    # 5. Загружаем готовый Magisk-модуль в артефакты
     - uses: actions/upload-artifact@v7
       with:
         name: zygisk-il2cppdumper
